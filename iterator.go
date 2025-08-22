@@ -41,6 +41,19 @@ var (
 	ErrType        = errors.New("incompatible type")
 )
 
+func (d *Iterator) ExpectType(b []byte, st int, typ Type) (i int, err error) {
+	tp, i, err := d.Type(b, st)
+	if err != nil {
+		return i, err
+	}
+
+	if tp != typ {
+		return i, ErrType
+	}
+
+	return i, nil
+}
+
 // Type finds the beginning of the next value and detects its type.
 // It doesn't parse the value so it can't detect if it's incorrect.
 func (d *Iterator) Type(b []byte, st int) (tp Type, i int, err error) {
@@ -149,22 +162,19 @@ func (d *Iterator) Break(b []byte, st, depth int) (i int, err error) {
 }
 
 // Key reads the next string removing quotes but not decoding the string value.
-// So escape sequences (\n, \uXXXX) are not decoded. They are returned as is.
+// Escape sequences (\n, \uXXXX) are not decoded. They are returned as is.
 // This is intended for object keys as they usually contain alpha-numeric symbols only.
 // This is faster and does not require additional buffer for decoding.
+// It returns subslice of b, so k content must not be edited.
 func (d *Iterator) Key(b []byte, st int) (k []byte, i int, err error) {
-	tp, i, err := d.Type(b, st)
+	i, err = d.ExpectType(b, st, String)
 	if err != nil {
-		return
-	}
-
-	if tp != String {
-		return nil, i, ErrType
+		return nil, i, err
 	}
 
 	raw, i, err := d.Raw(b, i)
 	if err != nil {
-		return
+		return nil, i, err
 	}
 
 	return raw[1 : len(raw)-1], i, nil
@@ -173,13 +183,9 @@ func (d *Iterator) Key(b []byte, st int) (k []byte, i int, err error) {
 // DecodeString reads the next string, decodes escape sequences (\n, \uXXXX),
 // and appends the result to the buf.
 func (d *Iterator) DecodeString(b []byte, st int, buf []byte) (s []byte, i int, err error) {
-	tp, i, err := d.Type(b, st)
+	i, err = d.ExpectType(b, st, String)
 	if err != nil {
 		return buf, i, err
-	}
-
-	if tp != String {
-		return buf, i, ErrType
 	}
 
 	ss, w, _, i := skip.DecodeString(b, i, skip.Quo|skip.ErrRune|skip.ErrEscape, buf)
@@ -196,13 +202,9 @@ func (d *Iterator) DecodeString(b []byte, st int, buf []byte) (s []byte, i int, 
 // DecodedStringLength reads and decodes the next string but only return the result length.
 // It doesn't allocate while DecodeString does.
 func (d *Iterator) DecodedStringLength(b []byte, st int) (bs, rs, i int, err error) {
-	tp, i, err := d.Type(b, st)
+	i, err = d.ExpectType(b, st, String)
 	if err != nil {
-		return
-	}
-
-	if tp != String {
-		return 0, 0, i, ErrType
+		return 0, 0, i, err
 	}
 
 	ss, bs, rs, i := skip.String(b, i, skip.Quo|skip.ErrRune)
