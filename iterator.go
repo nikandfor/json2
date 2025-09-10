@@ -2,6 +2,7 @@ package json2
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"nikand.dev/go/skip"
@@ -39,7 +40,10 @@ var (
 	ErrShortBuffer = io.ErrShortBuffer
 	ErrSyntax      = errors.New("syntax error")
 	ErrType        = errors.New("incompatible type")
+	ErrValue       = errors.New("incorrect value")
 )
+
+var dec Iterator
 
 func (d *Iterator) ExpectType(b []byte, st int, typ Type) (i int, err error) {
 	tp, i, err := d.Type(b, st)
@@ -419,6 +423,27 @@ func (d *Iterator) skipComment(b []byte, st int) (i int, err error) {
 	}
 
 	return i, nil
+}
+
+func (tp Type) String() string {
+	switch tp {
+	case None:
+		return "none"
+	case Null:
+		return "null"
+	case Bool:
+		return "bool"
+	case String:
+		return "string"
+	case Array:
+		return "array"
+	case Object:
+		return "object"
+	case Comment:
+		return "comment"
+	default:
+		return fmt.Sprintf("%q", rune(tp))
+	}
 }
 
 // SkipSpaces skips whitespaces.
