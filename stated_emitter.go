@@ -122,6 +122,17 @@ func (e *StatedEmitter) NextIsKey() *StatedEmitter {
 	return e
 }
 
+func (e *StatedEmitter) Raw(raw []byte) *StatedEmitter {
+	e.comma()
+
+	e.Buf = append(e.Buf, raw...)
+	e.setcomma()
+
+	e.colon(false)
+
+	return e
+}
+
 func (e *StatedEmitter) String(s string) *StatedEmitter {
 	e.comma()
 

@@ -20,6 +20,16 @@ func (d Iterator) Value(b []byte, st int) (Value, error) {
 	return Value(raw), err
 }
 
+func (raw Value) Type() Type {
+	tp, _, _ := dec.Type(raw, 0)
+	return tp
+}
+
+func (raw Value) TypeErr() (Type, error) {
+	tp, _, err := dec.Type(raw, 0)
+	return tp, err
+}
+
 func (raw Value) ShouldBool() (v bool) {
 	v, _ = raw.Bool()
 	return v
