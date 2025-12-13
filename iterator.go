@@ -448,7 +448,11 @@ func (tp Type) String() string {
 
 // SkipSpaces skips whitespaces.
 func SkipSpaces(b []byte, i int) int {
-	return skip.Spaces(b, i)
+	for i < len(b) && isWhitespace(b[i]) {
+		i++
+	}
+
+	return i
 }
 
 func isWhitespace(b byte) bool {
