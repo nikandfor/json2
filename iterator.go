@@ -36,11 +36,12 @@ var whitespaces uint64 = 1<<'\n' | 1<<'\r' | 1<<'\t' | 1<<' '
 
 // Iterator errors. Plus Str errors from skip module.
 var (
-	ErrBadNumber   = errors.New("bad number")
-	ErrShortBuffer = io.ErrShortBuffer
-	ErrSyntax      = errors.New("syntax error")
-	ErrType        = errors.New("incompatible type")
-	ErrValue       = errors.New("incorrect value")
+	ErrBadNumber    = errors.New("bad number")
+	ErrShortBuffer  = io.ErrShortBuffer
+	ErrSyntax       = errors.New("syntax error")
+	ErrTrailingData = errors.New("trailing data")
+	ErrType         = errors.New("incompatible type")
+	ErrValue        = errors.New("invalid value")
 )
 
 var dec Iterator

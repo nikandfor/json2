@@ -6,7 +6,7 @@ type (
 	Value []byte
 )
 
-func (d Iterator) ShouldValue(b []byte, st int) Value {
+func (d *Iterator) ShouldValue(b []byte, st int) Value {
 	val, err := d.Value(b, st)
 	if err != nil {
 		return nil
@@ -15,9 +15,14 @@ func (d Iterator) ShouldValue(b []byte, st int) Value {
 	return val
 }
 
-func (d Iterator) Value(b []byte, st int) (Value, error) {
+func (d *Iterator) Value(b []byte, st int) (Value, error) {
 	raw, _, err := d.Raw(b, st)
 	return Value(raw), err
+}
+
+func (raw Value) OfType(typ Type) bool {
+	tp, _, _ := dec.Type(raw, 0)
+	return tp == typ
 }
 
 func (raw Value) Type() Type {
