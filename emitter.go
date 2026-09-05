@@ -12,6 +12,8 @@ const hex = "0123456789abcdef"
 
 var jsonStringSafe [2]uint64
 
+var enc Emitter
+
 func init() {
 	for b := byte(0x20); b < utf8.RuneSelf; b++ {
 		if b == '"' || b == '\\' {
