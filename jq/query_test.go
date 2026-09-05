@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestQuery(tb *testing.T) {
@@ -17,12 +15,12 @@ func TestQuery(tb *testing.T) {
 	i := 0
 
 	for j, exp := range []string{`1`, `"2"`, `3`, `4`, `"5"`} {
-		assert.Equal(tb, j == 0, state == nil)
+		assertEqual(tb, j == 0, state == nil)
 
 		w, i, state, err = f.Next(w[:0], r, i, state)
 		assertBytesErr(tb, r, i, err)
 
-		assert.Equal(tb, exp, string(w))
+		assertEqual(tb, exp, string(w))
 
 		if tb.Failed() {
 			return
@@ -32,9 +30,9 @@ func TestQuery(tb *testing.T) {
 	w, i, state, err = f.Next(w[:0], r, i, state)
 	assertBytesErr(tb, r, i, err)
 
-	assert.Nil(tb, state)
-	assert.Empty(tb, w)
-	assert.Equal(tb, len(r), i)
+	assertNil(tb, state)
+	assertEmpty(tb, w)
+	assertEqual(tb, len(r), i)
 }
 
 func TestQueryEmpty(tb *testing.T) {
@@ -43,8 +41,8 @@ func TestQueryEmpty(tb *testing.T) {
 
 	w, i, err := NextAll(f, nil, r, 0, nil)
 	assertBytesErr(tb, r, i, err)
-	assert.Equal(tb, len(r), i)
-	assert.Equal(tb, r, w)
+	assertEqual(tb, len(r), i)
+	assertEqual(tb, r, w)
 }
 
 func TestQueryIterEmpty(tb *testing.T) {
@@ -54,20 +52,20 @@ func TestQueryIterEmpty(tb *testing.T) {
 	f := NewQuery("a", Iter{})
 
 	w, _, state, err := f.Next(w[:0], r, 0, nil)
-	assert.NoError(tb, err)
-	assert.Nil(tb, state)
-	assert.Len(tb, w, 0)
+	assertNoError(tb, err)
+	assertNil(tb, state)
+	assertLen(tb, w, 0)
 
 	f = NewQuery("b", Iter{})
 
 	w, _, state, err = f.Next(w[:0], r, 0, nil)
-	assert.NoError(tb, err)
-	assert.Nil(tb, state)
-	assert.Len(tb, w, 0)
+	assertNoError(tb, err)
+	assertNil(tb, state)
+	assertLen(tb, w, 0)
 }
 
 func assertBytesErr(tb *testing.T, r []byte, i int, err error) {
-	if assert.NoError(tb, err) {
+	if assertNoError(tb, err) {
 		return
 	}
 

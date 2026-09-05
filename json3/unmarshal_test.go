@@ -6,8 +6,6 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/stretchr/testify/assert"
-
 	json2 "nikand.dev/go/json2"
 	"nikand.dev/go/json2/benchmarks_data"
 )
@@ -142,11 +140,11 @@ func TestUnmarshalDecoder(tb *testing.T) {
 			uns = map[unsafe.Pointer]unmarshaler{}
 
 			i, err := d.Unmarshal([]byte(tc.D), 0, tc.X)
-			if !assert.NoError(tb, err) {
+			if !assertNoError(tb, err) {
 				return
 			}
 
-			assert.Equal(tb, len(tc.D), i)
+			assertEqual(tb, len(tc.D), i)
 
 			checkUnmarshal(tb, []byte(tc.D), tc.E, tc.X)
 		})
@@ -159,40 +157,40 @@ func TestUnmarshalDecoderData(tb *testing.T) {
 	var small, smallStd benchmarks_data.SmallPayload
 
 	err := json.Unmarshal(benchmarks_data.SmallFixture, &smallStd)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	i, err := d.Unmarshal(benchmarks_data.SmallFixture, 0, &small)
-	assert.NoError(tb, err)
-	assert.Equal(tb, len(benchmarks_data.SmallFixture), i)
+	assertNoError(tb, err)
+	assertEqual(tb, len(benchmarks_data.SmallFixture), i)
 
-	assert.Equal(tb, smallStd, small)
+	assertEqual(tb, smallStd, small)
 
 	//
 
 	var medium, mediumStd benchmarks_data.MediumPayload
 
 	err = json.Unmarshal(benchmarks_data.MediumFixture, &mediumStd)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	i, err = d.Unmarshal(benchmarks_data.MediumFixture, 0, &medium)
-	assert.NoError(tb, err)
-	assert.Equal(tb, len(benchmarks_data.MediumFixture), i)
+	assertNoError(tb, err)
+	assertEqual(tb, len(benchmarks_data.MediumFixture), i)
 
-	assert.Equal(tb, mediumStd, medium)
+	assertEqual(tb, mediumStd, medium)
 
 	//
 
 	var large, largeStd benchmarks_data.LargePayload
 
 	err = json.Unmarshal(benchmarks_data.LargeFixture, &largeStd)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	i, err = d.Unmarshal(benchmarks_data.LargeFixture, 0, &large)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 	i = json2.SkipSpaces(benchmarks_data.LargeFixture, i)
-	assert.Equal(tb, len(benchmarks_data.LargeFixture), i)
+	assertEqual(tb, len(benchmarks_data.LargeFixture), i)
 
-	assert.Equal(tb, largeStd, large)
+	assertEqual(tb, largeStd, large)
 }
 
 func TestUnmarshalReader(tb *testing.T) {
@@ -207,7 +205,7 @@ func TestUnmarshalReader(tb *testing.T) {
 			r.Reset([]byte(tc.D), nil)
 
 			err := r.Unmarshal(tc.X)
-			if !assert.NoError(tb, err) {
+			if !assertNoError(tb, err) {
 				return
 			}
 
@@ -222,45 +220,45 @@ func TestUnmarshalReaderData(tb *testing.T) {
 	var small, smallStd benchmarks_data.SmallPayload
 
 	err := json.Unmarshal(benchmarks_data.SmallFixture, &smallStd)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	r.Reset(benchmarks_data.SmallFixture, nil)
 
 	err = r.Unmarshal(&small)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
-	assert.Equal(tb, smallStd, small)
+	assertEqual(tb, smallStd, small)
 
 	//
 
 	var medium, mediumStd benchmarks_data.MediumPayload
 
 	err = json.Unmarshal(benchmarks_data.MediumFixture, &mediumStd)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	r.Reset(benchmarks_data.MediumFixture, nil)
 
 	err = r.Unmarshal(&medium)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	q := benchmarks_data.MediumFixture
 	tb.Logf("%q %q %q", q[2136-6:2136], q[2136:2146], q[2146:2146+10])
 
-	assert.Equal(tb, mediumStd, medium)
+	assertEqual(tb, mediumStd, medium)
 
 	//
 
 	var large, largeStd benchmarks_data.LargePayload
 
 	err = json.Unmarshal(benchmarks_data.LargeFixture, &largeStd)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
 	r.Reset(benchmarks_data.LargeFixture, nil)
 
 	err = r.Unmarshal(&large)
-	assert.NoError(tb, err)
+	assertNoError(tb, err)
 
-	assert.Equal(tb, largeStd, large)
+	assertEqual(tb, largeStd, large)
 }
 
 func checkUnmarshal(tb *testing.T, data []byte, e, x interface{}) {
@@ -278,7 +276,7 @@ func checkUnmarshal(tb *testing.T, data []byte, e, x interface{}) {
 	//	log.Printf("unmarshal\n`%s`\n%+v\n", tc.D, deref)
 	tb.Logf("unmarshal\n`%s`\n%+v (%[2]T)", data, res)
 
-	assert.Equal(tb, exp, res)
+	assertEqual(tb, exp, res)
 }
 
 func ptr[T any](x T) *T {

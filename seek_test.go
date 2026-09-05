@@ -2,8 +2,6 @@ package json2
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIteratorSeek(tb *testing.T) {
@@ -34,15 +32,15 @@ func TestIteratorSeek(tb *testing.T) {
 	} {
 		st, err := d.Seek([]byte(tc.In), 0, tc.Path...)
 		if tc.Err == nil {
-			assert.NoError(tb, err)
+			assertNoError(tb, err)
 		} else {
-			assert.ErrorIs(tb, err, tc.Err)
+			assertErrorIs(tb, err, tc.Err)
 			continue
 		}
 
 		end, err := d.Skip([]byte(tc.In), st)
-		assert.NoError(tb, err)
+		assertNoError(tb, err)
 
-		assert.Equal(tb, tc.Out, tc.In[st:end])
+		assertEqual(tb, tc.Out, tc.In[st:end])
 	}
 }

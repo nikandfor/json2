@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestObject(tb *testing.T) {
@@ -33,11 +31,11 @@ func TestObject(tb *testing.T) {
 		}
 
 		w, i, state, err := f.Next(nil, r, 0, nil)
-		assert.NoError(tb, err)
-		assert.Nil(tb, state)
-		assert.Equal(tb, len(r), i)
+		assertNoError(tb, err)
+		assertNil(tb, state)
+		assertEqual(tb, len(r), i)
 
-		assert.Equal(tb, []byte(tc.Exp), w)
+		assertEqual(tb, []byte(tc.Exp), w)
 
 		if tb.Failed() {
 			break
@@ -60,17 +58,17 @@ func TestObjectMulti(tb *testing.T) {
 		for _, exp := range []string{`{"a":1}`, `{"a":2}`, `{"a":"3"}`} {
 			w, i, state, err = f.Next(w[:0], r, i, state)
 			tb.Logf("obj: %s  next state %+v", w, state)
-			assert.NoError(tb, err)
-			assert.NotNil(tb, state)
+			assertNoError(tb, err)
+			assertNotNil(tb, state)
 
-			assert.Equal(tb, []byte(exp), w)
+			assertEqual(tb, []byte(exp), w)
 		}
 
 		w, i, state, err = f.Next(w[:0], r, 0, state)
-		assert.NoError(tb, err)
-		assert.Nil(tb, state)
-		assert.Equal(tb, len(r), i)
-		assert.Equal(tb, []byte{}, w)
+		assertNoError(tb, err)
+		assertNil(tb, state)
+		assertEqual(tb, len(r), i)
+		assertEqual(tb, []byte{}, w)
 	})
 
 	tb.Run("two", func(tb *testing.T) {
@@ -95,17 +93,17 @@ func TestObjectMulti(tb *testing.T) {
 		} {
 			w, i, state, err = f.Next(w[:0], r, i, state)
 			tb.Logf("obj: %s  next state %+v", w, state)
-			assert.NoError(tb, err)
-			assert.NotNil(tb, state)
+			assertNoError(tb, err)
+			assertNotNil(tb, state)
 
-			assert.Equal(tb, []byte(exp), w)
+			assertEqual(tb, []byte(exp), w)
 		}
 
 		w, i, state, err = f.Next(w[:0], r, 0, state)
-		assert.NoError(tb, err)
-		assert.Nil(tb, state)
-		assert.Equal(tb, len(r), i)
-		assert.Equal(tb, []byte{}, w)
+		assertNoError(tb, err)
+		assertNil(tb, state)
+		assertEqual(tb, len(r), i)
+		assertEqual(tb, []byte{}, w)
 	})
 
 	tb.Run("three", func(tb *testing.T) {
@@ -131,16 +129,16 @@ func TestObjectMulti(tb *testing.T) {
 		} {
 			w, i, state, err = f.Next(w[:0], r, i, state)
 			tb.Logf("obj: %s  next state %+v", w, state)
-			assert.NoError(tb, err)
-			assert.NotNil(tb, state)
+			assertNoError(tb, err)
+			assertNotNil(tb, state)
 
-			assert.Equal(tb, []byte(exp), w)
+			assertEqual(tb, []byte(exp), w)
 		}
 
 		w, i, state, err = f.Next(w[:0], r, 0, state)
-		assert.NoError(tb, err)
-		assert.Nil(tb, state)
-		assert.Equal(tb, len(r), i)
-		assert.Equal(tb, []byte{}, w)
+		assertNoError(tb, err)
+		assertNil(tb, state)
+		assertEqual(tb, len(r), i)
+		assertEqual(tb, []byte{}, w)
 	})
 }

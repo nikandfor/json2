@@ -2,8 +2,6 @@ package json2
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMergePatch(tb *testing.T) {
@@ -28,8 +26,8 @@ func TestMergePatch(tb *testing.T) {
 		{Base: ` { "a" : 1 } `, Patch: ` { "b" : { } } `, Out: `{"a":1,"b":{}}`},
 	} {
 		w, err := MergePatch(nil, []byte(tc.Base), []byte(tc.Patch))
-		assert.NoError(tb, err)
-		assert.Equal(tb, tc.Out, string(w))
+		assertNoError(tb, err)
+		assertEqual(tb, tc.Out, string(w))
 	}
 }
 
@@ -51,8 +49,8 @@ func TestSet(tb *testing.T) {
 		{Base: `{"a":1}`, KVs: []any{"b", "q\"w", "c", []byte("e\nf")}, Out: `{"a":1,"b":"q\"w","c":"e\nf"}`},
 	} {
 		w, err := Set(nil, []byte(tc.Base), tc.KVs...)
-		assert.NoError(tb, err)
-		assert.Equal(tb, tc.Out, string(w))
+		assertNoError(tb, err)
+		assertEqual(tb, tc.Out, string(w))
 	}
 }
 
@@ -74,5 +72,5 @@ func TestMergePatchAlloc(tb *testing.T) {
 		}
 	})
 
-	assert.Equal(tb, 0., n)
+	assertEqual(tb, 0., n)
 }

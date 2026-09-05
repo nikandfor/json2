@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestComma(t *testing.T) {
@@ -18,20 +16,20 @@ func TestComma(t *testing.T) {
 	var state State
 
 	b, i, state, err := f.Next(nil, []byte(data), 0, state)
-	assert.NoError(t, err)
-	assert.NotNil(t, state)
-	assert.Equal(t, `"b"`, string(b))
+	assertNoError(t, err)
+	assertNotNil(t, state)
+	assertEqual(t, `"b"`, string(b))
 
 	b, i, state, err = f.Next(nil, []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.NotNil(t, state)
-	assert.Equal(t, `4`, string(b))
+	assertNoError(t, err)
+	assertNotNil(t, state)
+	assertEqual(t, `4`, string(b))
 
 	b, i, state, err = f.Next(nil, []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, `"e"`, string(b))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, `"e"`, string(b))
 }
 
 func TestCommaPipe(t *testing.T) {
@@ -44,22 +42,22 @@ func TestCommaPipe(t *testing.T) {
 	)
 
 	b, i, state, err := f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.NotNil(t, state)
-	//	assert.Len(t, data, i)
-	assert.Equal(t, `"b"`, string(b))
+	assertNoError(t, err)
+	assertNotNil(t, state)
+	//	assertLen(t, data, i)
+	assertEqual(t, `"b"`, string(b))
 
 	b, i, state, err = f.Next(nil, []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.NotNil(t, state)
-	//	assert.Len(t, data, i)
-	assert.Equal(t, `4`, string(b))
+	assertNoError(t, err)
+	assertNotNil(t, state)
+	//	assertLen(t, data, i)
+	assertEqual(t, `4`, string(b))
 
 	b, i, state, err = f.Next(nil, []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, `"e"`, string(b))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, `"e"`, string(b))
 }
 
 func TestCommaIter(t *testing.T) {
@@ -80,14 +78,14 @@ func TestCommaIter(t *testing.T) {
 	for _, tc := range []string{`1`, `2`, `3`, `4`, `5`} {
 		w, i, state, err = f.Next(w[:0], r, i, state)
 		t.Logf("comma iter  %s  %+v  %v", w, state, err)
-		assert.NoError(t, err)
-		assert.NotNil(t, state)
-		assert.Equal(t, tc, string(w))
+		assertNoError(t, err)
+		assertNotNil(t, state)
+		assertEqual(t, tc, string(w))
 	}
 
 	w, i, state, err = f.Next(w[:0], r, i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Equal(t, len(r), i)
-	assert.Empty(t, w)
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertEqual(t, len(r), i)
+	assertEmpty(t, w)
 }

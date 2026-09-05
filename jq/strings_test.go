@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCat(t *testing.T) {
@@ -14,16 +12,16 @@ func TestCat(t *testing.T) {
 	data := `"ama", "ena", "uma", "viva"`
 
 	w, i, state, err := f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, `"ama-ena-uma-viva"`, string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, `"ama-ena-uma-viva"`, string(w))
 
 	data = `"\nqwe 世"  "界\tend"`
 
 	w, i, state, err = f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, `"\nqwe 世-界\tend"`, string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, `"\nqwe 世-界\tend"`, string(w))
 }

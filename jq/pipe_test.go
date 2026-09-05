@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPipeQuery(t *testing.T) {
@@ -16,13 +14,13 @@ func TestPipeQuery(t *testing.T) {
 	)
 
 	b, i, state, err := f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, "3.4", string(b))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, "3.4", string(b))
 
-	//	assert.True(t, cap(f.Bufs[0]) != 0)
-	//	assert.True(t, cap(f.Bufs[1]) != 0)
+	//	assertTrue(t, cap(f.Bufs[0]) != 0)
+	//	assertTrue(t, cap(f.Bufs[1]) != 0)
 }
 
 func TestPipeComma(t *testing.T) {
@@ -48,15 +46,15 @@ func TestPipeComma(t *testing.T) {
 		`["b",2]`,
 	} {
 		b, i, state, err = f.Next(b[:0], []byte(data), i, state)
-		if !assert.NoError(t, err) ||
-			!assert.True(t, (state == nil) == (j == 3), "index %d  state %v", j, state) ||
-			//	assert.Equal(t, 0, i)
-			!assert.Equal(t, exp, string(b)) {
+		if !assertNoError(t, err) ||
+			!assertTrue(t, (state == nil) == (j == 3), "index %d  state %v", j, state) ||
+			//	assertEqual(t, 0, i)
+			!assertEqual(t, exp, string(b)) {
 			t.Logf("index: %v", j)
 		}
 	}
 
-	assert.Nil(t, state)
+	assertNil(t, state)
 }
 
 func BenchmarkPipeQuery(b *testing.B) {

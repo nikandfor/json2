@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSelect(t *testing.T) {
@@ -18,12 +16,12 @@ func TestSelect(t *testing.T) {
 		"1", ``, `"a"`, `[4]`, `{"b":true}`,
 	} {
 		w, i, state, err = NewSelect(nil).Next(w[:0], []byte(data), i, state)
-		assert.NoError(t, err)
-		//	assert.Len(t, data, i)
-		assert.Equal(t, exp, string(w))
+		assertNoError(t, err)
+		//	assertLen(t, data, i)
+		assertEqual(t, exp, string(w))
 	}
 
-	assert.Nil(t, state)
+	assertNil(t, state)
 }
 
 func TestMap(t *testing.T) {
@@ -36,10 +34,10 @@ func TestMap(t *testing.T) {
 	}
 
 	w, i, state, err := f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Equal(t, len(data), i)
-	assert.Equal(t, `[5,5,5,5,5]`, string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertEqual(t, len(data), i)
+	assertEqual(t, `[5,5,5,5,5]`, string(w))
 
 	f = Map{
 		Filter: NewComma(
@@ -49,10 +47,10 @@ func TestMap(t *testing.T) {
 	}
 
 	w, i, state, err = f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Equal(t, len(data), i)
-	assert.Equal(t, `[5,6,5,6,5,6,5,6,5,6]`, string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertEqual(t, len(data), i)
+	assertEqual(t, `[5,6,5,6,5,6,5,6,5,6]`, string(w))
 }
 
 func TestMapSelectEqual(t *testing.T) {
@@ -64,8 +62,8 @@ func TestMapSelectEqual(t *testing.T) {
 	)))
 
 	w, i, state, err := f.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Equal(t, len(data), i)
-	assert.Equal(t, `[{"a":"b"},{"a":"b"}]`, string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertEqual(t, len(data), i)
+	assertEqual(t, `[{"a":"b"},{"a":"b"}]`, string(w))
 }

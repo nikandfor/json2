@@ -2,8 +2,6 @@ package jq
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIter(t *testing.T) {
@@ -18,17 +16,17 @@ func TestIter(t *testing.T) {
 		"1", "null", `"a"`, `[4]`, `{"b":true}`,
 	} {
 		w, i, state, err = Iter{}.Next(w[:0], []byte(data), i, state)
-		assert.NoError(t, err)
-		assert.NotNil(t, state)
-		//	assert.Len(t, data, i)
-		assert.Equal(t, exp, string(w))
+		assertNoError(t, err)
+		assertNotNil(t, state)
+		//	assertLen(t, data, i)
+		assertEqual(t, exp, string(w))
 	}
 
 	w, i, state, err = Iter{}.Next(w[:0], []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, "", string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, "", string(w))
 
 	state = nil
 	i = 0
@@ -39,17 +37,17 @@ func TestIter(t *testing.T) {
 		`"b"`, "4", `[null, true, false]`, `{"f": "g"}`,
 	} {
 		w, i, state, err = Iter{}.Next(w[:0], []byte(data), i, state)
-		assert.NoError(t, err)
-		assert.NotNil(t, state)
-		//	assert.Len(t, data, i)
-		assert.Equal(t, exp, string(w))
+		assertNoError(t, err)
+		assertNotNil(t, state)
+		//	assertLen(t, data, i)
+		assertEqual(t, exp, string(w))
 	}
 
 	w, i, state, err = Iter{}.Next(w[:0], []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, "", string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, "", string(w))
 
 	state = nil
 	i = 0
@@ -57,10 +55,10 @@ func TestIter(t *testing.T) {
 	data = `{}`
 
 	w, i, state, err = Iter{}.Next(w[:0], []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, "", string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, "", string(w))
 
 	state = nil
 	i = 0
@@ -68,8 +66,8 @@ func TestIter(t *testing.T) {
 	data = `[]`
 
 	w, i, state, err = Iter{}.Next(w[:0], []byte(data), i, state)
-	assert.NoError(t, err)
-	assert.Nil(t, state)
-	assert.Len(t, data, i)
-	assert.Equal(t, "", string(w))
+	assertNoError(t, err)
+	assertNil(t, state)
+	assertLen(t, data, i)
+	assertEqual(t, "", string(w))
 }

@@ -3,8 +3,6 @@ package json2
 import (
 	"encoding/json"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestReader(t *testing.T) {
@@ -20,7 +18,7 @@ func TestReader(t *testing.T) {
 		r.Reset([]byte(data), nil)
 
 		raw, err := r.Raw()
-		if !assert.NoError(t, err) || !assert.Equal(t, []byte(data), raw) {
+		if !assertNoError(t, err) || !assertEqual(t, []byte(data), raw) {
 			t.Logf("data: %q", data)
 		}
 	}
@@ -39,7 +37,7 @@ func TestReaderDecodeString(t *testing.T) {
 		r.Reset([]byte(data), nil)
 
 		s, err := r.DecodeString(nil)
-		if !assert.NoError(t, err) || !assert.Equal(t, len(data), r.i) {
+		if !assertNoError(t, err) || !assertEqual(t, len(data), r.i) {
 			t.Logf("pos: %d (%[1]x)  data: %d %q", r.i, j, data)
 			continue
 		}
@@ -47,7 +45,7 @@ func TestReaderDecodeString(t *testing.T) {
 		var q string
 
 		err = json.Unmarshal([]byte(data), &q)
-		assert.NoError(t, err)
-		assert.Equal(t, q, string(s))
+		assertNoError(t, err)
+		assertEqual(t, q, string(s))
 	}
 }

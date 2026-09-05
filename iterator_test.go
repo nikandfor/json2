@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIterator(t *testing.T) {
@@ -19,7 +17,7 @@ func TestIterator(t *testing.T) {
 		"{}", `{"key":"val"}`, `{"k": "v", "k2": 3, "k3": [], "k4": {}, "k5": null}`,
 	} {
 		raw, i, err := d.Raw([]byte(data), 0)
-		if !assert.NoError(t, err) || !assert.Equal(t, len(data), i) || !assert.Equal(t, []byte(data), raw) {
+		if !assertNoError(t, err) || !assertEqual(t, len(data), i) || !assertEqual(t, []byte(data), raw) {
 			t.Logf("pos: %d (%[1]x)  data: %q", i, data)
 		}
 	}
@@ -37,27 +35,27 @@ func TestIteratorString(t *testing.T) {
 		var q string
 
 		err := json.Unmarshal([]byte(data), &q)
-		assert.NoError(t, err)
+		assertNoError(t, err)
 
 		i, err := d.Skip([]byte(data), 0)
-		if !assert.NoError(t, err) || !assert.Equal(t, len(data), i) {
+		if !assertNoError(t, err) || !assertEqual(t, len(data), i) {
 			t.Logf("pos: %d (%[1]x)  data: %d %q", i, j, data)
 			continue
 		}
 
 		s, i, err := d.DecodeString([]byte(data), 0, nil)
-		if !assert.NoError(t, err) || !assert.Equal(t, len(data), i) {
+		if !assertNoError(t, err) || !assertEqual(t, len(data), i) {
 			t.Logf("pos: %d (%[1]x)  data: %d %q", i, j, data)
 			continue
 		}
 
-		assert.Equal(t, q, string(s))
+		assertEqual(t, q, string(s))
 
 		if false {
 			q, err := strconv.Unquote(data)
-			assert.NoError(t, err)
+			assertNoError(t, err)
 
-			assert.Equal(t, q, string(s))
+			assertEqual(t, q, string(s))
 		}
 	}
 }
@@ -73,7 +71,7 @@ cases:
 		b := []byte(data)
 
 		i, err := d.Enter(b, 0, Type(data[0]))
-		if !assert.NoError(t, err) {
+		if !assertNoError(t, err) {
 			t.Logf("pos: %d (%[1]x)  data: %q", i, data)
 			continue
 		}
@@ -81,18 +79,18 @@ cases:
 		for d.ForMore(b, &i, Type(data[0]), &err) {
 			if data[0] == '{' {
 				_, i, err = d.Key(b, i)
-				if !assert.NoError(t, err) {
+				if !assertNoError(t, err) {
 					continue cases
 				}
 			}
 
 			i, err = d.Skip(b, i)
-			if !assert.NoError(t, err) {
+			if !assertNoError(t, err) {
 				continue cases
 			}
 		}
 
-		if !assert.NoError(t, err) {
+		if !assertNoError(t, err) {
 			t.Logf("pos: %d (%[1]x)  data: %q", i, data)
 			continue
 		}

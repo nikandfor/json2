@@ -3,8 +3,6 @@ package jq
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"nikand.dev/go/json2"
 )
 
@@ -16,34 +14,34 @@ func TestSimple(t *testing.T) {
 	data := `{"a":"b","c":4,"d":["e",null,true,false,{"f":3.4}]}`
 
 	b, i, _, err := Dot{}.Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Len(t, data, i)
-	assert.Equal(t, data, string(b))
+	assertNoError(t, err)
+	assertLen(t, data, i)
+	assertEqual(t, data, string(b))
 
 	b, i, _, err = NewQuery("a").Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Len(t, data, i)
-	assert.Equal(t, `"b"`, string(b))
+	assertNoError(t, err)
+	assertLen(t, data, i)
+	assertEqual(t, `"b"`, string(b))
 
 	b, i, _, err = NewQuery("c").Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Len(t, data, i)
-	assert.Equal(t, `4`, string(b))
+	assertNoError(t, err)
+	assertLen(t, data, i)
+	assertEqual(t, `4`, string(b))
 
 	b, i, _, err = NewQuery("non").Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Len(t, data, i)
-	assert.Equal(t, `null`, string(b))
+	assertNoError(t, err)
+	assertLen(t, data, i)
+	assertEqual(t, `null`, string(b))
 
 	b, i, _, err = NewQuery("d", 2).Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Len(t, data, i)
-	assert.Equal(t, `true`, string(b))
+	assertNoError(t, err)
+	assertLen(t, data, i)
+	assertEqual(t, `true`, string(b))
 
 	b, i, _, err = NewQuery("d", 4, "f").Next(nil, []byte(data), 0, nil)
-	assert.NoError(t, err)
-	assert.Len(t, data, i)
-	assert.Equal(t, `3.4`, string(b))
+	assertNoError(t, err)
+	assertLen(t, data, i)
+	assertEqual(t, `3.4`, string(b))
 }
 
 func BenchmarkNextAll(b *testing.B) {

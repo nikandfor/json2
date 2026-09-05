@@ -51,7 +51,6 @@ linters-settings:
       main:
         allow:
           - $gostd
-          - github.com/stretchr/testify
           - nikand.dev/go/json2
           - nikand.dev/go/skip
           - tlog.app/go/errors
@@ -104,7 +103,6 @@ linters:
     - paralleltest
     - prealloc
     - recvcheck
-    - testifylint
     - testpackage
     - thelper
     - unparam
