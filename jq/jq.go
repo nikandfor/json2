@@ -37,7 +37,7 @@ type (
 	//
 	// It's opaque value for the caller and only should be used to pass it back
 	// to the same Filter with the same buffer and index returned with the state.
-	State interface{}
+	State any
 
 	// Dot is a trivial filter that parses the values and returns it unchanged.
 	Dot struct{}

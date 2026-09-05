@@ -3,7 +3,7 @@ package json2
 // Seek seeks to the beginning of the value at the path – list of object keys and array indexes.
 // If you parse multiple object and you only need one value from each,
 // it's good to use Break(len(path)) to move to the beginning of the next object.
-func (r *Reader) Seek(path ...interface{}) (err error) {
+func (r *Reader) Seek(path ...any) (err error) {
 	for _, p := range path {
 		switch p := p.(type) {
 		case string:

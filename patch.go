@@ -1,6 +1,9 @@
 package json2
 
-import "strconv"
+import (
+	"bytes"
+	"strconv"
+)
 
 // MergePatch merges the patch into the base and appends the result to w.
 // It works the same way as RFC 7386 JSON Merge Patch:
@@ -39,63 +42,79 @@ func Set(w, base []byte, kvs ...any) ([]byte, error) {
 
 	w = append(w, '{')
 
-	if braw != nil {
-		var k, v []byte
-		var err error
+	w, err = setBase(w, braw, kvs)
+	if err != nil {
+		return w, err
+	}
 
-		i, err := dec.Enter(braw, 0, Object)
+	w, err = setRest(w, braw, kvs)
+	if err != nil {
+		return w, err
+	}
 
-		for err == nil && dec.ForMore(braw, &i, Object, &err) {
-			k, i, err = dec.Key(braw, i)
-			if err != nil {
-				return w, err
-			}
+	return append(w, '}'), nil
+}
 
-			v, i, err = dec.Raw(braw, i)
-			if err != nil {
-				return w, err
-			}
+// setBase writes the base keys with the values replaced by the kvs ones.
+func setBase(w, base []byte, kvs []any) ([]byte, error) {
+	if base == nil {
+		return w, nil
+	}
 
-			j := kvsKey(kvs, k)
-			if j >= 0 && kvs[j+1] == nil {
-				continue
-			}
+	var k, v []byte
 
-			w = appendKey(w, k)
+	i, err := dec.Enter(base, 0, Object)
 
-			if j >= 0 {
-				w = appendValue(w, kvs[j+1])
-			} else {
-				w = append(w, v...)
-			}
-		}
+	for err == nil && dec.ForMore(base, &i, Object, &err) {
+		k, i, err = dec.Key(base, i)
 		if err != nil {
 			return w, err
 		}
-	}
 
-	for j := 0; j < len(kvs); j += 2 {
-		k := s2b(kvs[j].(string))
+		v, i, err = dec.Raw(base, i)
+		if err != nil {
+			return w, err
+		}
 
-		if kvs[j+1] == nil || kvsKey(kvs, k) != j {
+		j := kvsKey(kvs, k)
+		if j < 0 {
+			w = appendKey(w, k)
+			w = append(w, v...)
+
 			continue
 		}
 
-		if braw != nil {
-			_, ok, err := objectKey(braw, k)
-			if err != nil {
-				return w, err
-			}
-			if ok {
-				continue
-			}
+		if kvs[j+1] == nil {
+			continue
 		}
 
 		w = appendKey(w, k)
 		w = appendValue(w, kvs[j+1])
 	}
 
-	w = append(w, '}')
+	return w, err
+}
+
+// setRest writes the kvs keys missing from the base.
+func setRest(w, base []byte, kvs []any) ([]byte, error) {
+	for j := 0; j+1 < len(kvs); j += 2 {
+		k := s2b(kvs[j].(string))
+
+		if kvs[j+1] == nil || kvsKey(kvs, k) != j {
+			continue
+		}
+
+		_, ok, err := objectKey(base, k)
+		if err != nil {
+			return w, err
+		}
+		if ok {
+			continue
+		}
+
+		w = appendKey(w, k)
+		w = appendValue(w, kvs[j+1])
+	}
 
 	return w, nil
 }
@@ -110,52 +129,72 @@ func patchValue(w, base, patch []byte) ([]byte, error) {
 
 	w = append(w, '{')
 
-	if base != nil {
-		var k, v, p []byte
-		var ok bool
-		var err error
+	w, err := patchBase(w, base, patch)
+	if err != nil {
+		return w, err
+	}
 
-		i, err := dec.Enter(base, 0, Object)
+	w, err = patchRest(w, base, patch)
+	if err != nil {
+		return w, err
+	}
 
-		for err == nil && dec.ForMore(base, &i, Object, &err) {
-			k, i, err = dec.Key(base, i)
-			if err != nil {
-				return w, err
-			}
+	return append(w, '}'), nil
+}
 
-			v, i, err = dec.Raw(base, i)
-			if err != nil {
-				return w, err
-			}
+// patchBase writes the base keys merged with the patch ones.
+func patchBase(w, base, patch []byte) ([]byte, error) {
+	if base == nil {
+		return w, nil
+	}
 
-			p, ok, err = objectKey(patch, k)
-			if err != nil {
-				return w, err
-			}
-			if ok && isNull(p) {
-				continue
-			}
+	var k, v, p []byte
+	var ok bool
 
-			w = appendKey(w, k)
+	i, err := dec.Enter(base, 0, Object)
 
-			if !ok {
-				w = append(w, v...)
-				continue
-			}
-
-			w, err = patchValue(w, v, p)
-			if err != nil {
-				return w, err
-			}
+	for err == nil && dec.ForMore(base, &i, Object, &err) {
+		k, i, err = dec.Key(base, i)
+		if err != nil {
+			return w, err
 		}
+
+		v, i, err = dec.Raw(base, i)
+		if err != nil {
+			return w, err
+		}
+
+		p, ok, err = objectKey(patch, k)
+		if err != nil {
+			return w, err
+		}
+
+		if !ok {
+			w = appendKey(w, k)
+			w = append(w, v...)
+
+			continue
+		}
+
+		if isNull(p) {
+			continue
+		}
+
+		w = appendKey(w, k)
+
+		w, err = patchValue(w, v, p)
 		if err != nil {
 			return w, err
 		}
 	}
 
+	return w, err
+}
+
+// patchRest writes the patch keys missing from the base.
+func patchRest(w, base, patch []byte) ([]byte, error) {
 	var k, v []byte
 	var ok bool
-	var err error
 
 	i, err := dec.Enter(patch, 0, Object)
 
@@ -174,14 +213,12 @@ func patchValue(w, base, patch []byte) ([]byte, error) {
 			continue
 		}
 
-		if base != nil {
-			_, ok, err = objectKey(base, k)
-			if err != nil {
-				return w, err
-			}
-			if ok {
-				continue
-			}
+		_, ok, err = objectKey(base, k)
+		if err != nil {
+			return w, err
+		}
+		if ok {
+			continue
 		}
 
 		w = appendKey(w, k)
@@ -191,17 +228,16 @@ func patchValue(w, base, patch []byte) ([]byte, error) {
 			return w, err
 		}
 	}
-	if err != nil {
-		return w, err
-	}
 
-	w = append(w, '}')
-
-	return w, nil
+	return w, err
 }
 
 // objectKey looks the key up in the raw object and returns its raw value.
 func objectKey(b, key []byte) (v []byte, ok bool, err error) {
+	if b == nil {
+		return nil, false, nil
+	}
+
 	var k []byte
 
 	i, err := dec.Enter(b, 0, Object)
@@ -212,7 +248,7 @@ func objectKey(b, key []byte) (v []byte, ok bool, err error) {
 			return nil, false, err
 		}
 
-		if string(k) == string(key) {
+		if bytes.Equal(k, key) {
 			v, _, err = dec.Raw(b, i)
 			return v, err == nil, err
 		}
@@ -222,11 +258,18 @@ func objectKey(b, key []byte) (v []byte, ok bool, err error) {
 			return nil, false, err
 		}
 	}
-	if err != nil {
-		return nil, false, err
+
+	return nil, false, err
+}
+
+func kvsKey(kvs []any, key []byte) int {
+	for j := 0; j+1 < len(kvs); j += 2 {
+		if kvs[j].(string) == string(key) {
+			return j
+		}
 	}
 
-	return nil, false, nil
+	return -1
 }
 
 // rawValue trims spaces and comments around the value. Empty buffer is no value.
@@ -238,16 +281,6 @@ func rawValue(b []byte) (raw []byte, err error) {
 	raw, _, err = dec.Raw(b, 0)
 
 	return raw, err
-}
-
-func kvsKey(kvs []any, key []byte) int {
-	for j := 0; j < len(kvs); j += 2 {
-		if kvs[j].(string) == string(key) {
-			return j
-		}
-	}
-
-	return -1
 }
 
 // appendKey adds the comma if the previous value is already written.

@@ -34,7 +34,7 @@ func (e *Emitter) AppendKey(w, s []byte) []byte {
 	return w
 }
 
-// EncodeString encodes string in a JSON compatible way.
+// AppendString encodes string in a JSON compatible way.
 func (e *Emitter) AppendString(w, s []byte) []byte {
 	w = append(w, '"')
 	w = e.AppendStringContent(w, s)
@@ -43,7 +43,7 @@ func (e *Emitter) AppendString(w, s []byte) []byte {
 	return w
 }
 
-// EncodeStringContent does the same as EncodeString but does not add quotes.
+// AppendStringContent does the same as AppendString but does not add quotes.
 // It can be used to generate the string from multiple parts.
 // Yet if a symbol designated to be escaped is split between parts
 // it encodes each part of the symbol separately.

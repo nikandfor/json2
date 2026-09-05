@@ -273,7 +273,7 @@ func (d *Iterator) More(b []byte, st int, typ Type) (more bool, i int, err error
 }
 
 // ForMore is a convenient wrapper for More which makes iterating code shorter and simpler.
-func (d *Iterator) ForMore(b []byte, i *int, typ Type, errp *error) bool { //nolint:gocritic
+func (d *Iterator) ForMore(b []byte, i *int, typ Type, errp *error) bool {
 	more, j, err := d.More(b, *i, typ)
 	*i = j
 

@@ -1,105 +1,29 @@
-run:
-  #modules-download-mode: readonly
-issues:
-  exclude:
-    - "break_"
-    - "undbg"
-    - "flags"
-  exclude-rules:
-    - path: benchmarks_data
-      linters:
-        - stylecheck
-        - lll
-    - path: "(.*)_test\\.go"
-      linters:
-        - goconst
-    - path: low.go
-      linters:
-        - deadcode
-        - unused
-    - path: "unmarshal\\.go"
-      linters:
-        - dupl
-    - source: protected by mu
-      linters:
-        - godot
-    - source: "var \\("
-      linters:
-        - gofumpt
-linters-settings:
-  govet:
-    check-shadowing: false
-  golint:
-    min-confidence: 0
-  gocognit:
-    min-complexity: 30
-  cyclop:
-    max-complexity: 30
-  maligned:
-    suggest-new: true
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-  revive:
-    rules:
-      - name: unused-parameter
-        disabled: true
-  depguard:
-    rules:
-      main:
-        allow:
-          - $gostd
-          - nikand.dev/go/json2
-          - nikand.dev/go/skip
-          - tlog.app/go/errors
-          - tlog.app/go/loc
-          - tlog.app/go/tlog
-  misspell:
-  lll:
-    line-length: 170
-  goimports:
-    local-prefixes: nikand.dev/go/json2
-  prealloc:
-    simple: true
-    for-loops: true
-  gocritic:
-    enabled-tags:
-      - experimental
-      - performance
-      - style
-    disabled-checks:
-      - appendAssign
-      - builtinShadow
-      - commentedOutCode
-      - octalLiteral
-      - unnamedResult
-      - whyNoLint
-      - yodaStyleExpr
-
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
+    - dogsled
+    - embeddedstructfieldcheck
+    - err113
+    - errname
     - exhaustive
-    - exhaustivestruct
     - exhaustruct
+    - exhaustruct_v5
     - forcetypeassert
+    - funcorder
     - funlen
-    - gci
     - gochecknoglobals
     - gochecknoinits
     - godox
-    - goerr113
-    - golint
-    - gomnd
-    - ifshort
+    - gomodguard
+    - gosmopolitan
+    - inamedparam
     - ireturn
     - mnd
     - nakedret
     - nlreturn
+    - noinlineerr
     - nonamedreturns
-    - nosnakecase
     - paralleltest
     - prealloc
     - recvcheck
@@ -108,6 +32,83 @@ linters:
     - unparam
     - varnamelen
     - whitespace
+    - wrapcheck
     - wsl
-
-    - wrapcheck # for now
+    - wsl_v5
+  settings:
+    cyclop:
+      max-complexity: 30
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - nikand.dev/go/json2
+            - nikand.dev/go/skip
+    dupl:
+      threshold: 100
+    gocognit:
+      min-complexity: 30
+    goconst:
+      min-len: 2
+      min-occurrences: 4
+    gocritic:
+      disabled-checks:
+        - appendAssign
+        - builtinShadow
+        - commentedOutCode
+        - equalFold
+        - octalLiteral
+        - ptrToRefParam
+        - unnamedResult
+        - whyNoLint
+        - yodaStyleExpr
+      enabled-tags:
+        - experimental
+        - performance
+        - style
+    lll:
+      line-length: 170
+    revive:
+      rules:
+        - name: unused-parameter
+          disabled: true
+    staticcheck:
+      checks:
+        - all
+        - -QF1008
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - godoclint
+          - lll
+          - staticcheck
+        path: benchmarks_data
+      - linters:
+          - goconst
+        path: (.*)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - nikand.dev/go/json2
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

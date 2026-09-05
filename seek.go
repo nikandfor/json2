@@ -11,7 +11,7 @@ var (
 // Seek seeks to the beginning of the value at the path – list of object keys and array indexes.
 // If you parse multiple object and you only need one value from each,
 // it's good to use Break(len(path)) to move to the beginning of the next object.
-func (d *Iterator) Seek(b []byte, st int, path ...interface{}) (i int, err error) {
+func (d *Iterator) Seek(b []byte, st int, path ...any) (i int, err error) {
 	i = st
 
 	for _, p := range path {

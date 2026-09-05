@@ -292,7 +292,7 @@ again:
 }
 
 // ForMore is a convenient wrapper for More which makes iterating code shorter and simpler.
-func (r *Reader) ForMore(typ Type, errp *error) bool { //nolint:gocritic
+func (r *Reader) ForMore(typ Type, errp *error) bool {
 	more, err := r.More(typ)
 	if err != nil {
 		*errp = err
