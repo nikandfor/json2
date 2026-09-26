@@ -3,6 +3,7 @@ package json2
 import (
 	"errors"
 	"io"
+	"unicode/utf8"
 
 	"nikand.dev/go/skip"
 )
@@ -109,7 +110,7 @@ func (r *Reader) Raw() ([]byte, error) {
 
 	err = r.Break(0)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	st := r.lock[l-1]
@@ -158,14 +159,10 @@ again:
 			r.i++
 			depth--
 		default:
-			r.i, err = d.skipNum(r.b, r.i)
-			if err == ErrBadNumber && r.i == len(r.b) { //nolint:errorlint
-				err = nil
-				break again
-			}
+			err = r.skipNumber()
 		}
 
-		if depth == 0 {
+		if err == nil && depth == 0 {
 			return nil
 		}
 	}
@@ -370,45 +367,102 @@ func (r *Reader) Rewind() {
 	r.i = r.lock[len(r.lock)-1]
 }
 
-func (r *Reader) skipString() (bs, rs int, err error) {
-	var bs0, rs0 int
-	s := skip.Quo
+// skipNumber parses a number reparsing it from the beginning after each refill.
+// skip.Number can't be continued, and a number reaching the buffer edge may have more digits coming,
+// so the number is only complete if it's followed by a byte that can't be a part of it
+// or by the end of the data.
+func (r *Reader) skipNumber() error {
+	var d Iterator
 
 	for {
-		if r.i >= len(r.b) {
-			if err := r.more(); err != nil {
-				return bs, rs, err
-			}
+		i, err := d.skipNum(r.b, r.i)
+
+		end := i
+		for end < len(r.b) && isNumberByte(r.b[end]) {
+			end++
 		}
 
-		s, bs0, rs0, r.i = skip.String(r.b, r.i, s)
+		if err == nil && end < len(r.b) {
+			r.i = i
+
+			return nil
+		}
+
+		e := r.more()
+		if e == nil {
+			continue
+		}
+		if r.r != nil && !errors.Is(e, io.EOF) { // read failure, not the end of the data
+			return e
+		}
+		if err != nil {
+			return err
+		}
+
+		r.i = i
+
+		return nil
+	}
+}
+
+func isNumberByte(c byte) bool {
+	return c >= '0' && c <= '9' ||
+		c >= 'a' && c <= 'z' ||
+		c >= 'A' && c <= 'Z' ||
+		c == '.' || c == '+' || c == '-' || c == '_'
+}
+
+func (r *Reader) skipString() (bs, rs int, err error) {
+	flags := skip.Quo
+
+	for {
+		s, bs0, rs0, i := skip.String(r.b, r.i, flags)
+		r.i = i
 		bs += bs0
 		rs += rs0
+
 		if !s.Err() {
 			return bs, rs, nil
 		}
-		if s.Err() && !s.Is(skip.ErrBuffer) {
+		if !r.strMore(s) {
 			return bs, rs, s
+		}
+		if s.Is(skip.Dqt) { // opening quote is consumed, continue from the body
+			flags |= skip.Continue
+		}
+
+		if err := r.more(); err != nil {
+			return bs, rs, err
 		}
 	}
 }
 
+// strMore tells if the string parsing can be continued after reading more data.
+// A rune cut by the buffer end is reported as a bad rune, not as a short buffer.
+func (r *Reader) strMore(s skip.Str) bool {
+	return s.Is(skip.ErrBuffer) || s.Is(skip.ErrRune) && !utf8.FullRune(r.b[r.i:])
+}
+
 func (r *Reader) decodeString(w []byte) (_ []byte, err error) {
-	s := skip.Quo
+	flags := skip.Quo
 
 	for {
-		if r.i >= len(r.b) {
-			if err := r.more(); err != nil {
-				return w, err
-			}
-		}
+		s, w0, _, i := skip.DecodeString(r.b, r.i, flags, w)
+		r.i = i
+		w = w0
 
-		s, w, _, r.i = skip.DecodeString(r.b, r.i, s, w)
 		if !s.Err() {
 			return w, nil
 		}
-		if s.Err() && !s.Is(skip.ErrBuffer) {
+		if !r.strMore(s) {
 			return w, s
+		}
+		if s.Is(skip.Dqt) {
+			flags |= skip.Continue
+		}
+
+		if err := r.more(); err != nil {
+			return w, err
 		}
 	}
 }
@@ -506,6 +560,9 @@ func (r *Reader) more() error {
 
 	if cap(r.b) == 0 {
 		r.b = make([]byte, 16<<10)
+	}
+	if end == cap(r.b) {
+		r.b = append(r.b[:end], make([]byte, end)...)
 	}
 
 	r.b = r.b[:cap(r.b)]
